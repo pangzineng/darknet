@@ -205,12 +205,10 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 #endif	// OPENCV
 
 
-void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
+void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names, std::float const cur_time_extrapolate) {
 	for (auto &i : result_vec) {
-		if (obj_names.size() > i.obj_id) std::cout << obj_names[i.obj_id] << " - ";
-		std::cout << "track_id = " << i.track_id << ", frame_count = " << i.frames_counter << ",  x = " << i.x << ", y = " << i.y 
-			<< ", w = " << i.w << ", h = " << i.h
-			<< std::setprecision(3) << ", prob = " << i.prob << std::endl;
+		if (obj_names.size() > i.obj_id) std::cout << cur_time_extrapolate << "," << obj_names[i.obj_id] << ",";
+		std::cout << i.track_id << "," << i.frames_counter << std::setprecision(3) << "," << i.prob << std::endl;
 	}
 }
 
@@ -406,7 +404,7 @@ int main(int argc, char *argv[])
 						// 	cv::putText(cur_frame, "extrapolate", cv::Point2f(10, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(50, 50, 0), 2);
 						// }
 						// draw_boxes(cur_frame, result_vec_draw, obj_names, current_det_fps, current_cap_fps);
-						show_console_result(result_vec, obj_names);
+						show_console_result(result_vec, obj_names, cur_time_extrapolate);
 						// large_preview.draw(cur_frame);
 
 						// cv::imshow("window name", cur_frame);
@@ -449,7 +447,7 @@ int main(int argc, char *argv[])
 						std::cout << line << std::endl;
 						cv::Mat mat_img = cv::imread(line);
 						std::vector<bbox_t> result_vec = detector.detect(mat_img);
-						show_console_result(result_vec, obj_names);
+						show_console_result(result_vec, obj_names, cur_time_extrapolate);
 						//draw_boxes(mat_img, result_vec, obj_names);
 						//cv::imwrite("res_" + line, mat_img);
 					}
@@ -467,7 +465,7 @@ int main(int argc, char *argv[])
 				//result_vec = detector.tracking_id(result_vec);	// comment it - if track_id is not required
 				// draw_boxes(mat_img, result_vec, obj_names);
 				// cv::imshow("window name", mat_img);
-				show_console_result(result_vec, obj_names);
+				show_console_result(result_vec, obj_names, cur_time_extrapolate);
 				cv::waitKey(0);
 			}
 #else
@@ -476,7 +474,7 @@ int main(int argc, char *argv[])
 			auto img = detector.load_image(filename);
 			std::vector<bbox_t> result_vec = detector.detect(img);
 			detector.free_image(img);
-			show_console_result(result_vec, obj_names);
+			show_console_result(result_vec, obj_names, cur_time_extrapolate);
 #endif			
 		}
 		catch (std::exception &e) { std::cerr << "exception: " << e.what() << "\n"; getchar(); }
