@@ -188,7 +188,7 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 		cv::rectangle(mat_img, cv::Rect(i.x, i.y, i.w, i.h), color, 2);
 		if (obj_names.size() > i.obj_id) {
 			std::string obj_name = obj_names[i.obj_id];
-			if (i.track_id > 0) obj_name += " - " + std::to_string(i.track_id);
+			if (i.track_id > 0) obj_name += " - " + std::to_string(i.track_id) + " - " + std::to_string(i.frames_counter);
 			cv::Size const text_size = getTextSize(obj_name, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.2, 2, 0);
 			int const max_width = (text_size.width > i.w + 2) ? text_size.width : (i.w + 2);
 			cv::rectangle(mat_img, cv::Point2f(std::max((int)i.x - 1, 0), std::max((int)i.y - 30, 0)), 
