@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 									result_vec.push_back(i);
 							}
 							else {
-								it->frames_counter = std::min((unsigned)3, i.frames_counter + 1);
+								it->frames_counter = std::max((unsigned)1, i.frames_counter + 1);
 							}
 						}
 #ifdef TRACK_OPTFLOW
