@@ -15,6 +15,7 @@ decaf/
 submission/
 cfg/
 weights/
+test/
 darknet
 .fuse*
 

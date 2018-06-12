@@ -1,4 +1,6 @@
 data
 cfg
+weights
+test
 .circleci
 README.md
