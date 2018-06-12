@@ -67,4 +67,4 @@ RUN make
 
 ENV LD_LIBRARY_PATH="./:${LD_LIBRARY_PATH}"
 
-# ENTRYPOINT [ "./uselib" ]
+ENTRYPOINT [ "./uselib" ]

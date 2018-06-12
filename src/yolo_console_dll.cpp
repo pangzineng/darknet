@@ -208,7 +208,7 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
 	for (auto &i : result_vec) {
 		if (obj_names.size() > i.obj_id) std::cout << obj_names[i.obj_id] << " - ";
-		std::cout << "obj_id = " << i.obj_id << ",  x = " << i.x << ", y = " << i.y 
+		std::cout << "track_id = " << i.track_id << ", frame_count = " << i.frames_counter << ",  x = " << i.x << ", y = " << i.y 
 			<< ", w = " << i.w << ", h = " << i.h
 			<< std::setprecision(3) << ", prob = " << i.prob << std::endl;
 	}
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
 							fps_cap_counter = 0;
 						}
 
-						large_preview.set(cur_frame, result_vec);
+						// large_preview.set(cur_frame, result_vec);
 #ifdef TRACK_OPTFLOW
 						++passed_flow_frames;
 						track_optflow_queue.push(cur_frame.clone());
@@ -400,30 +400,30 @@ int main(int argc, char *argv[])
 						extrapolate_coords.update_result(result_vec, cur_time_extrapolate);
 						small_preview.draw(cur_frame, show_small_boxes);
 #endif						
-						auto result_vec_draw = result_vec;
-						if (extrapolate_flag) {
-							result_vec_draw = extrapolate_coords.predict(cur_time_extrapolate);
-							cv::putText(cur_frame, "extrapolate", cv::Point2f(10, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(50, 50, 0), 2);
-						}
-						draw_boxes(cur_frame, result_vec_draw, obj_names, current_det_fps, current_cap_fps);
-						//show_console_result(result_vec, obj_names);
-						large_preview.draw(cur_frame);
+						// auto result_vec_draw = result_vec;
+						// if (extrapolate_flag) {
+						// 	result_vec_draw = extrapolate_coords.predict(cur_time_extrapolate);
+						// 	cv::putText(cur_frame, "extrapolate", cv::Point2f(10, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(50, 50, 0), 2);
+						// }
+						// draw_boxes(cur_frame, result_vec_draw, obj_names, current_det_fps, current_cap_fps);
+						show_console_result(result_vec, obj_names);
+						// large_preview.draw(cur_frame);
 
-						cv::imshow("window name", cur_frame);
-						int key = cv::waitKey(3);	// 3 or 16ms
-						if (key == 'f') show_small_boxes = !show_small_boxes;
-						if (key == 'p') while (true) if(cv::waitKey(100) == 'p') break;
-						if (key == 'e') extrapolate_flag = !extrapolate_flag;
-						if (key == 27) { exit_flag = true; break; }
+						// cv::imshow("window name", cur_frame);
+						// int key = cv::waitKey(3);	// 3 or 16ms
+						// if (key == 'f') show_small_boxes = !show_small_boxes;
+						// if (key == 'p') while (true) if(cv::waitKey(100) == 'p') break;
+						// if (key == 'e') extrapolate_flag = !extrapolate_flag;
+						// if (key == 27) { exit_flag = true; break; }
 
-						if (output_video.isOpened() && videowrite_ready) {
-							if (t_videowrite.joinable()) t_videowrite.join();
-							write_frame = cur_frame.clone();
-							videowrite_ready = false;
-							t_videowrite = std::thread([&]() { 
-								 output_video << write_frame; videowrite_ready = true;
-							});
-						}
+						// if (output_video.isOpened() && videowrite_ready) {
+						// 	if (t_videowrite.joinable()) t_videowrite.join();
+						// 	write_frame = cur_frame.clone();
+						// 	videowrite_ready = false;
+						// 	t_videowrite = std::thread([&]() { 
+						// 		 output_video << write_frame; videowrite_ready = true;
+						// 	});
+						// }
 					}
 
 #ifndef TRACK_OPTFLOW
@@ -465,8 +465,8 @@ int main(int argc, char *argv[])
 				std::cout << " Time: " << spent.count() << " sec \n";
 
 				//result_vec = detector.tracking_id(result_vec);	// comment it - if track_id is not required
-				draw_boxes(mat_img, result_vec, obj_names);
-				cv::imshow("window name", mat_img);
+				// draw_boxes(mat_img, result_vec, obj_names);
+				// cv::imshow("window name", mat_img);
 				show_console_result(result_vec, obj_names);
 				cv::waitKey(0);
 			}
