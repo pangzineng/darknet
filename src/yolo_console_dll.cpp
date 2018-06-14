@@ -8,6 +8,8 @@
 #include <atomic>
 #include <mutex>              // std::mutex, std::unique_lock
 #include <condition_variable> // std::condition_variable
+#include <ctime>
+#include <map>
 
 #ifdef _WIN32
 #define OPENCV
@@ -212,6 +214,21 @@ void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::
 	}
 }
 
+float weight_func(float prob) {
+	if (prob >= 0.5) return 1.0;
+	if (prob < 0.25) return 0;
+	return 0.5;
+}
+
+std::string time_convert(float ts) {
+	char date[15];
+	time_t epoch = ts;
+	strftime(date, sizeof(date), "%Y%m%d%H%M%S", std::gmtime(&epoch));
+	std::cout << "debug|" << date << "|debug\n";
+	std::string str(date);
+	return str;
+}
+
 std::vector<std::string> objects_names_from_file(std::string const filename) {
 	std::ifstream file(filename);
 	std::vector<std::string> file_lines;
@@ -219,6 +236,10 @@ std::vector<std::string> objects_names_from_file(std::string const filename) {
 	for(std::string line; getline(file, line);) file_lines.push_back(line);
 	std::cout << "object names loaded \n";
 	return file_lines;
+}
+
+void post_chunks(std::map<std::string, std::map<int, float>> const chunk) {
+	//TODO: post to redis or stdout or something
 }
 
 
@@ -292,6 +313,8 @@ int main(int argc, char *argv[])
 				// cv::VideoWriter output_video;
 				// if (save_output_videofile)
 				// 	output_video.open(out_videofile, CV_FOURCC('D', 'I', 'V', 'X'), std::max(35, video_fps), frame_size, true);
+
+				std::map<std::string, std::map<int, float>> chunk;
 
 				while (!cur_frame.empty()) 
 				{
@@ -404,7 +427,15 @@ int main(int argc, char *argv[])
 						// 	cv::putText(cur_frame, "extrapolate", cv::Point2f(10, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(50, 50, 0), 2);
 						// }
 						// draw_boxes(cur_frame, result_vec_draw, obj_names, current_det_fps, current_cap_fps);
-						show_console_result(result_vec, obj_names, cur_time_extrapolate);
+						std::string t = time_convert(cur_time_extrapolate/video_fps);
+						for (auto &i : result_vec) {
+							float weight = weight_func(i.prob);
+							std::vector<int> ranges = {4,6,8,10,12,14};
+							for (auto range : ranges) {
+								chunk[t.substr(0,range)][i.track_id] += weight;
+							}
+						}
+						// show_console_result(result_vec, obj_names, cur_time_extrapolate);
 						// large_preview.draw(cur_frame);
 
 						// cv::imshow("window name", cur_frame);
@@ -437,6 +468,7 @@ int main(int argc, char *argv[])
 				if (t_detect.joinable()) t_detect.join();
 				if (t_videowrite.joinable()) t_videowrite.join();
 				std::cout << "Video ended \n";
+				post_chunks(chunk);
 				break;
 			}
 			else if (file_ext == "txt") {	// list of image files
