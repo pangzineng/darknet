@@ -242,8 +242,8 @@ int main(int argc, char *argv[])
 	Detector detector(cfg_file, weights_file);
 
 	auto obj_names = objects_names_from_file(names_file);
-	std::string out_videofile = "result.avi";
-	bool const save_output_videofile = true;
+	// std::string out_videofile = "result.avi";
+	// bool const save_output_videofile = true;
 #ifdef TRACK_OPTFLOW
 	Tracker_optflow tracker_flow;
 	detector.wait_stream = true;
@@ -289,9 +289,9 @@ int main(int argc, char *argv[])
 				cv::VideoCapture cap(filename); cap >> cur_frame;
 				int const video_fps = cap.get(CV_CAP_PROP_FPS);
 				cv::Size const frame_size = cur_frame.size();
-				cv::VideoWriter output_video;
-				if (save_output_videofile)
-					output_video.open(out_videofile, CV_FOURCC('D', 'I', 'V', 'X'), std::max(35, video_fps), frame_size, true);
+				// cv::VideoWriter output_video;
+				// if (save_output_videofile)
+				// 	output_video.open(out_videofile, CV_FOURCC('D', 'I', 'V', 'X'), std::max(35, video_fps), frame_size, true);
 
 				while (!cur_frame.empty()) 
 				{
