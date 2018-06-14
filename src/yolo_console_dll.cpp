@@ -205,7 +205,7 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 #endif	// OPENCV
 
 
-void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names, std::float const cur_time_extrapolate) {
+void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names, float const cur_time_extrapolate) {
 	for (auto &i : result_vec) {
 		if (obj_names.size() > i.obj_id) std::cout << cur_time_extrapolate << "," << obj_names[i.obj_id] << ",";
 		std::cout << i.track_id << "," << i.frames_counter << std::setprecision(3) << "," << i.prob << std::endl;
