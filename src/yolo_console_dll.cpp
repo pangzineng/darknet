@@ -10,6 +10,7 @@
 #include <condition_variable> // std::condition_variable
 #include <ctime>
 #include <map>
+#include <stdlib.h> /* atoi */
 
 #ifdef _WIN32
 #define OPENCV
@@ -114,7 +115,7 @@ public:
 	void new_result(std::vector<bbox_t> new_result_vec, float new_time) {
 		old_dx_vec = dx_vec;
 		old_dy_vec = dy_vec;
-		if (old_dx_vec.size() != old_result_vec.size()) std::cout << "old_dx != old_res \n";
+		// if (old_dx_vec.size() != old_result_vec.size()) std::cout << "old_dx != old_res \n";
 		dx_vec = std::vector<float>(new_result_vec.size(), 0);
 		dy_vec = std::vector<float>(new_result_vec.size(), 0);
 		update_result(new_result_vec, new_time, false);
@@ -208,23 +209,22 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 
 
 void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names, float const cur_time_extrapolate) {
-	for (auto &i : result_vec) {
-		if (obj_names.size() > i.obj_id) std::cout << cur_time_extrapolate << "," << obj_names[i.obj_id] << ",";
-		std::cout << i.track_id << "," << i.frames_counter << std::setprecision(3) << "," << i.prob << std::endl;
-	}
+	// for (auto &i : result_vec) {
+	// 	if (obj_names.size() > i.obj_id) std::cout << cur_time_extrapolate << "," << obj_names[i.obj_id] << ",";
+	// 	std::cout << i.track_id << "," << i.frames_counter << std::setprecision(3) << "," << i.prob << std::endl;
+	// }
 }
 
 float weight_func(float prob) {
 	if (prob >= 0.5) return 1.0;
-	if (prob < 0.25) return 0;
+	if (prob < 0.25) return prob;
 	return 0.5;
 }
 
-std::string time_convert(float ts) {
+std::string time_convert(double ts) {
 	char date[15];
 	time_t epoch = ts;
 	strftime(date, sizeof(date), "%Y%m%d%H%M%S", std::gmtime(&epoch));
-	std::cout << "debug|" << date << "|debug\n";
 	std::string str(date);
 	return str;
 }
@@ -234,12 +234,16 @@ std::vector<std::string> objects_names_from_file(std::string const filename) {
 	std::vector<std::string> file_lines;
 	if (!file.is_open()) return file_lines;
 	for(std::string line; getline(file, line);) file_lines.push_back(line);
-	std::cout << "object names loaded \n";
 	return file_lines;
 }
 
-void post_chunks(std::map<std::string, std::map<int, float>> const chunk) {
+void post_chunks(std::map<int, float> chunk, std::string cur_ts, int const video_fps) {
 	//TODO: post to redis or stdout or something
+	std::cout << cur_ts << "\t" << chunk.size();
+	for(auto const & kv : chunk) {
+		std::cout << "\t" << kv.first << ":" << std::setprecision(3) << kv.second/video_fps;
+	}
+	std::cout  << std::endl;
 }
 
 
@@ -249,16 +253,19 @@ int main(int argc, char *argv[])
 	std::string  cfg_file = "cfg/yolov3.cfg";
 	std::string  weights_file = "yolov3.weights";
 	std::string filename;
+	double start_time = 0;
+	std::string accepted_label = "person";
 
-	if (argc > 4) {	//voc.names yolo-voc.cfg yolo-voc.weights test.mp4		
+	if (argc > 5) {	//voc.names yolo-voc.cfg yolo-voc.weights test.mp4		
 		names_file = argv[1];
 		cfg_file = argv[2];
 		weights_file = argv[3];
 		filename = argv[4];
+		start_time = std::stoi( argv[5] );
 	}
 	else if (argc > 1) filename = argv[1];
 
-	float const thresh = (argc > 5) ? std::stof(argv[5]) : 0.20;
+	float const thresh = (argc > 6) ? std::stof(argv[5]) : 0.20;
 
 	Detector detector(cfg_file, weights_file);
 
@@ -272,7 +279,7 @@ int main(int argc, char *argv[])
 
 	while (true) 
 	{		
-		std::cout << "input image or video filename: ";
+		// std::cout << "input image or video filename: ";
 		if(filename.size() == 0) std::cin >> filename;
 		if (filename.size() == 0) break;
 		
@@ -314,7 +321,9 @@ int main(int argc, char *argv[])
 				// if (save_output_videofile)
 				// 	output_video.open(out_videofile, CV_FOURCC('D', 'I', 'V', 'X'), std::max(35, video_fps), frame_size, true);
 
-				std::map<std::string, std::map<int, float>> chunk;
+				std::map<int, float> chunk;
+				std::string cur_ts = time_convert(start_time);
+				std::string old_ts = time_convert(start_time);
 
 				while (!cur_frame.empty()) 
 				{
@@ -427,13 +436,10 @@ int main(int argc, char *argv[])
 						// 	cv::putText(cur_frame, "extrapolate", cv::Point2f(10, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(50, 50, 0), 2);
 						// }
 						// draw_boxes(cur_frame, result_vec_draw, obj_names, current_det_fps, current_cap_fps);
-						std::string t = time_convert(cur_time_extrapolate/video_fps);
 						for (auto &i : result_vec) {
+							if (accepted_label.compare(obj_names[i.obj_id]) != 0) continue;
 							float weight = weight_func(i.prob);
-							std::vector<int> ranges = {4,6,8,10,12,14};
-							for (auto range : ranges) {
-								chunk[t.substr(0,range)][i.track_id] += weight;
-							}
+							chunk[i.track_id] += weight;
 						}
 						// show_console_result(result_vec, obj_names, cur_time_extrapolate);
 						// large_preview.draw(cur_frame);
@@ -462,13 +468,19 @@ int main(int argc, char *argv[])
 						while (!consumed) cv_detected.wait(lock);
 					}
 #endif
+					cur_ts = time_convert(start_time + cur_time_extrapolate/video_fps);
+					if (cur_ts.compare(old_ts) > 0) {
+						post_chunks(chunk, cur_ts, video_fps);
+						old_ts = cur_ts;
+						chunk.clear();
+					}
 				}
 				exit_flag = true;
 				if (t_cap.joinable()) t_cap.join();
 				if (t_detect.joinable()) t_detect.join();
 				if (t_videowrite.joinable()) t_videowrite.join();
-				std::cout << "Video ended \n";
-				post_chunks(chunk);
+				// std::cout << "Video ended \n";
+				post_chunks(chunk, cur_ts, video_fps);
 				break;
 			}
 			else if (file_ext == "txt") {	// list of image files
@@ -492,7 +504,7 @@ int main(int argc, char *argv[])
 				std::vector<bbox_t> result_vec = detector.detect(mat_img);
 				auto end = std::chrono::steady_clock::now();
 				std::chrono::duration<double> spent = end - start;
-				std::cout << " Time: " << spent.count() << " sec \n";
+				// std::cout << " Time: " << spent.count() << " sec \n";
 
 				//result_vec = detector.tracking_id(result_vec);	// comment it - if track_id is not required
 				// draw_boxes(mat_img, result_vec, obj_names);
@@ -506,7 +518,7 @@ int main(int argc, char *argv[])
 			auto img = detector.load_image(filename);
 			std::vector<bbox_t> result_vec = detector.detect(img);
 			detector.free_image(img);
-			show_console_result(result_vec, obj_names, cur_time_extrapolate);
+			// show_console_result(result_vec, obj_names, cur_time_extrapolate);
 #endif			
 		}
 		catch (std::exception &e) { std::cerr << "exception: " << e.what() << "\n"; getchar(); }

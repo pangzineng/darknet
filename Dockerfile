@@ -62,9 +62,20 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
 COPY opencv.conf /etc/ld.so.conf.d/
 RUN ldconfig -v
 
+## install filebeat
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - \
+    && apt-get install apt-transport-https \
+    && echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-6.x.list \
+    && apt-get update \
+    && apt-get install -y filebeat \
+    && update-rc.d filebeat defaults 95 10
+
 COPY . .
 RUN make
 
 ENV LD_LIBRARY_PATH="./:${LD_LIBRARY_PATH}"
+
+COPY filebeat.yml /etc/filebeat/
+RUN chmod go-w /etc/filebeat/filebeat.yml
 
 ENTRYPOINT [ "./uselib" ]

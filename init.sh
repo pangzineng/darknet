@@ -14,4 +14,4 @@ youtube-dl -f 134 -o test/test.360p.mp4 https://www.youtube.com/watch?v=3hAvZLnd
 youtube-dl -f 133 -o test/test.240p.mp4 https://www.youtube.com/watch?v=3hAvZLndSWg
 
 ## build the image
-docker build -t realpixel:v2 . 
+docker build -t realpixel:dev . 
