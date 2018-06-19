@@ -237,11 +237,26 @@ std::vector<std::string> objects_names_from_file(std::string const filename) {
 	return file_lines;
 }
 
+// format: tsv
+// column: timestamp, expose_head_count, expose_time_volume, hc_list(comma-separated + trailing), tv_list(comma-separated + trailing)
 void post_chunks(std::map<int, float> chunk, std::string cur_ts, int const video_fps) {
-	//TODO: post to redis or stdout or something
-	std::cout << cur_ts << "\t" << chunk.size();
-	for(auto const & kv : chunk) {
-		std::cout << "\t" << kv.first << ":" << std::setprecision(3) << kv.second/video_fps;
+	std::vector<int> ks;
+	std::vector<float> vs;
+	for (auto const& element : chunk) {
+		ks.push_back(element.first);
+	}
+	float etv = 0;
+	for (auto const& element : chunk) {
+		etv += element.second/video_fps;
+		vs.push_back(element.second/video_fps);
+	}
+	std::cout << cur_ts << "\t" << chunk.size() << "\t" << std::setprecision(3) << etv << "\t";
+	for (const auto& i: ks) {
+		std::cout << i << ',';
+	}
+	std::cout << "\t";
+	for (const auto& i: vs) {
+		std::cout << i << ',';
 	}
 	std::cout  << std::endl;
 }

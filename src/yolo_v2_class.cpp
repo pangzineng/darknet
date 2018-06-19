@@ -272,10 +272,8 @@ YOLODLL_API std::vector<bbox_t> Detector::tracking_id(std::vector<bbox_t> cur_bb
 		if (i.size() > 0) prev_track_id_present = true;
 
 	if (!prev_track_id_present) {
-		for (size_t i = 0; i < cur_bbox_vec.size(); ++i) {
+		for (size_t i = 0; i < cur_bbox_vec.size(); ++i) 
 			cur_bbox_vec[i].track_id = det_gpu.track_id[cur_bbox_vec[i].obj_id]++;
-			cur_bbox_vec[i].frames_counter = 0;
-		}
 		prev_bbox_vec_deque.push_front(cur_bbox_vec);
 		if (prev_bbox_vec_deque.size() > frames_story) prev_bbox_vec_deque.pop_back();
 		return cur_bbox_vec;
@@ -304,7 +302,6 @@ YOLODLL_API std::vector<bbox_t> Detector::tracking_id(std::vector<bbox_t> cur_bb
 
 			if (cur_index >= 0 && track_id_absent){
 				cur_bbox_vec[cur_index].track_id = i.track_id;
-				cur_bbox_vec[cur_index].frames_counter= i.frames_counter+1;
 				cur_bbox_vec[cur_index].w = (cur_bbox_vec[cur_index].w + i.w) / 2;
 				cur_bbox_vec[cur_index].h = (cur_bbox_vec[cur_index].h + i.h) / 2;
 			}
@@ -312,10 +309,8 @@ YOLODLL_API std::vector<bbox_t> Detector::tracking_id(std::vector<bbox_t> cur_bb
 	}
 
 	for (size_t i = 0; i < cur_bbox_vec.size(); ++i)
-		if (cur_bbox_vec[i].track_id == 0) {
+		if (cur_bbox_vec[i].track_id == 0)
 			cur_bbox_vec[i].track_id = det_gpu.track_id[cur_bbox_vec[i].obj_id]++;
-			cur_bbox_vec[i].frames_counter = 0;
-		}
 
 	if (change_history) {
 		prev_bbox_vec_deque.push_front(cur_bbox_vec);

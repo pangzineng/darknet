@@ -10,16 +10,12 @@ filebeat.inputs:
       realpixel_id: ${RP_ID:default_realpixel_id}
       realpixel_region: ${RP_REGION:default_realpixel_region}
 
-processors:
-
-
 output.logstash:
-  hosts: ['${LOGSTASH_HOSTS}']
-  loadbalance: true
+  hosts: ["logstash:5044"]
   worker: 2
   index: filebeat
 
-setup.kibana.host: ${KIBANA_HOSTS}
+setup.kibana.host: "kibana:5601"
 setup.dashboards.enabled: true
 
 logging:
