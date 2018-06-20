@@ -1,15 +1,16 @@
 #!/bin/bash
 
 data=${1}
-result=${2}
-ts=${3:-$(date +%s)}
-job=${4:-tiny}
+ts=${2:-$(date +%s)}
+job=${3:-tiny}
 
-RESULT_ROOT='/realpixel/data'
-mkdir -p ${RESULT_ROOT}
+INPUT_ROOT='/realpixel/input'
+OUTPUT_ROOT='/realpixel/output'
+mkdir -p ${INPUT_ROOT}
+mkdir -p ${OUTPUT_ROOT}
 
 echo "[REALPIXEL] start ${job} realpixel job for ${data}"
 service filebeat start &&
-echo "[REALPIXEL] use: coco.names yolov3-tiny.cfg yolov3-tiny.weights, for: ${data} started at ${ts}, result at: ${RESULT_ROOT}/${result}" &&
-./uselib runtime/${job}.names runtime/${job}.cfg runtime/${job}.weights ${data} ${ts} 2>> ${RESULT_ROOT}/${result}.error 1>> ${RESULT_ROOT}/${result} &&
+echo "[REALPIXEL] use: coco.names yolov3-tiny.cfg yolov3-tiny.weights, for: ${data} started at ${ts}, result at: ${OUTPUT_ROOT}/${data}.log" &&
+./uselib runtime/${job}.names runtime/${job}.cfg runtime/${job}.weights ${INPUT_ROOT}/${data} ${ts} 2>> ${OUTPUT_ROOT}/${data}.log.error 1>> ${OUTPUT_ROOT}/${data}.log &&
 echo "[REALPIXEL] finish ${job} realpixel job for ${data}"
