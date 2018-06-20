@@ -3,7 +3,7 @@
 data=${1}
 result=${2}
 ts=${3:-$(date +%s)}
-job=${4:-standard}
+job=${4:-tiny}
 
 RESULT_ROOT='/realpixel/data'
 mkdir -p ${RESULT_ROOT}
