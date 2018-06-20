@@ -13,5 +13,6 @@ youtube-dl -f 135 -o test/test.480p.mp4 https://www.youtube.com/watch?v=3hAvZLnd
 youtube-dl -f 134 -o test/test.360p.mp4 https://www.youtube.com/watch?v=3hAvZLndSWg
 youtube-dl -f 133 -o test/test.240p.mp4 https://www.youtube.com/watch?v=3hAvZLndSWg
 
-## build the image
-docker build -t realpixel:dev . 
+## build & push the image
+docker build -t pangzineng/realpixel:dev . && 
+docker push pangzineng/realpixel:dev

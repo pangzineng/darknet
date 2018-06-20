@@ -5,20 +5,11 @@ result=${2}
 ts=${3:-$(date +%s)}
 job=${4:-standard}
 
+RESULT_ROOT='/realpixel/data'
+mkdir -p ${RESULT_ROOT}
+
 echo "[REALPIXEL] start ${job} realpixel job for ${data}"
-
-if [[ "$job" == "standard" ]]
-then
-    service filebeat start &&
-    echo "[REALPIXEL] ./uselib data/coco.names cfg/yolov3-tiny.cfg weights/yolov3-tiny.weights ${data} ${ts} 2>> ${result}.error 1>> ${result}" &&
-    ./uselib data/coco.names cfg/yolov3-tiny.cfg weights/yolov3-tiny.weights ${data} ${ts} 2>> ${result}.error 1>> ${result} &&
-    echo "[REALPIXEL] result at: ${result}"
-elif [[ "$job" == "full" ]]
-then
-    service filebeat start &&
-    echo "[REALPIXEL] ./uselib data/coco.names cfg/yolov3.cfg weights/yolov3.weights ${data} ${ts} 2>> ${result}.error 1>> ${result}" &&
-    ./uselib data/coco.names cfg/yolov3.cfg weights/yolov3.weights ${data} ${ts} 2>> ${result}.error 1>> ${result} &&
-    echo "[REALPIXEL] result at: ${result}"
-fi
-
+service filebeat start &&
+echo "[REALPIXEL] use: coco.names yolov3-tiny.cfg yolov3-tiny.weights, for: ${data} started at ${ts}, result at: ${RESULT_ROOT}/${result}" &&
+./uselib runtime/${job}.names runtime/${job}.cfg runtime/${job}.weights ${data} ${ts} 2>> ${RESULT_ROOT}/${result}.error 1>> ${RESULT_ROOT}/${result} &&
 echo "[REALPIXEL] finish ${job} realpixel job for ${data}"

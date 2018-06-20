@@ -5,7 +5,7 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /test/test.*.log
+      - /realpixel/data/*
     fields:
       realpixel_id: ${RP_ID:default_realpixel_id}
       realpixel_region: ${RP_REGION:default_realpixel_region}
